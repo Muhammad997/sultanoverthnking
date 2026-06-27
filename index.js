@@ -14,13 +14,20 @@ const randomJokes = [
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        headless: 'new', // 1. WAJIB di server/Railway agar Chrome berjalan di background
+        headless: 'new',
         args: [
             '--no-sandbox', 
             '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage', // 2. Mencegah crash akibat batasan memori container
+            '--disable-dev-shm-usage',
             '--disable-gpu'
         ]
+    },
+    // GANTI BAGIAN INI: Menggunakan strategi lokal agar tidak terpengaruh refresh WA Web
+    webVersionCache: {
+        type: 'remote',
+        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html' 
+    }
+});
     },
     webVersionCache: { // 3. PENTING! Mencegah error 't: t' dengan mengunci versi WA Web yang stabil
         type: 'remote',
