@@ -1,6 +1,6 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const axios = require('axios');
-const NOMOR_HP_BOT = '62888211898831'; 
+const NOMOR_HP_BOT = '6288211898831'; 
 // =====================================================================
 
 const randomJokes = [
