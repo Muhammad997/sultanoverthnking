@@ -1,10 +1,6 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const axios = require('axios');
-
-// =====================================================================
-// PENTING: Ganti dengan nomor HP yang akan dijadikan bot (pake kode negara tanpa '+')
-// Contoh: '628123456789'
-const NOMOR_HP_BOT = '628xxxxxxxxxx'; 
+const NOMOR_HP_BOT = '62888211898831'; 
 // =====================================================================
 
 const randomJokes = [
@@ -22,7 +18,6 @@ const client = new Client({
     }
 });
 
-// Logika untuk Pairing Code (Menggantikan QR Code)
 client.on('qr', async (qr) => {
     try {
         const pairingCode = await client.requestPairingCode(NOMOR_HP_BOT);
