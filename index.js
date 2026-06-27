@@ -22,16 +22,9 @@ const client = new Client({
             '--disable-gpu'
         ]
     },
-    // GANTI BAGIAN INI: Menggunakan strategi lokal agar tidak terpengaruh refresh WA Web
-    webVersionCache: {
-        type: 'remote',
-        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html' 
-    }
-});
-    },
-    webVersionCache: { // 3. PENTING! Mencegah error 't: t' dengan mengunci versi WA Web yang stabil
-        type: 'remote',
-        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1018591586-alpha.html'
+    // Memaksa mengambil versi fresh langsung dari server WhatsApp Web tanpa cache yang merusak
+    webVersionCache: { 
+        type: 'none'
     }
 });
 
