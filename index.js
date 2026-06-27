@@ -2,6 +2,17 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const axios = require('axios');
 
+// Kumpulan jokes bapak-bapak / random buat tambahan renyah
+const randomJokes = [
+    "Kenapa ayam kalau berkokok matanya merem? Soalnya udah hafal teksnya.",
+    "Piring apa yang paling sensitif? Piring-piring cantik, digores dikit nangis.",
+    "Kenapa gorengan kalau mateng warnanya cokelat? Kalau ijo mah lumut.",
+    "Sepatu, sepatu apa yang bisa jalan sendiri? Sepatutnya kita bersyukur.",
+    "Bundaran HI kalau diputerin tiga kali jadinya apa? Jadinya pusing.",
+    "Kenapa donat tengahnya bolong? Kalau utuh namanya bakpao, dong.",
+    "Uang kalau dilempar jadi apa? Jadi rebutan, lah!"
+];
+
 // Inisialisasi Bot WA
 const client = new Client({
     authStrategy: new LocalAuth(),
@@ -10,36 +21,34 @@ const client = new Client({
     }
 });
 
-// Generate QR Code di Terminal buat login pertama kali
 client.on('qr', (qr) => {
     qrcode.generate(qr, { small: true });
-    console.log('--- SCAN QR CODE INI DI WHATSAPP KAMU ---');
+    console.log('--- SCAN QR CODE INI ---');
 });
 
 client.on('ready', () => {
-    console.log('🤖 Bot WA Kocak udah siap narik mang!');
+    console.log('🤖 Bot WA Kocak Muhammad Sulaiman udah aktif!');
 });
 
-// Handle Pesan Masuk
 client.on('message', async (msg) => {
-    // Biar gak nyaut di grup secara brutal, kita setel buat chat pribadi dulu aja
-    // Atau kalau mau di grup, bisa pake kondisi khusus (misal: panggil namanya)
+    // Merespon chat pribadi
     if (msg.from.endsWith('@c.us')) { 
-        
         const userMessage = msg.body;
         
-        // Panggil API GLM-5.2 via B.AI
+        // Ambil 1 joke random buat bumbu AI
+        const jokeBumbu = randomJokes[Math.floor(Math.random() * randomJokes.length)];
+
         try {
-            const response = await axios.post('https://api.b.ai/v1/chat/completions', { // Sesuaikan URL endpoint B.AI kamu
+            const response = await axios.post('https://api.b.ai/v1/chat/completions', {
                 model: 'glm-5.2',
                 messages: [
                     { 
                         role: 'system', 
-                        content: 'Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp yang super lucu, kocak parah, sarkas tapi jenaka, suka pakai bahasa gaul/slang Indonesia, dan selalu ngasih jawaban yang di luar nalar atau overthinking tingkat dewa. Jangan kaku, jawab pendek-pendek dan bikin ketawa!' 
+                        content: `Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp super lucu, kocak parah, dan suka ngasih jawaban di luar nalar. Jawablah dengan gaya bahasa gaul/slang. Sebagai inspirasi komedi, ini ada info tambahan joke hari ini: "${jokeBumbu}". Padukan kegilaanmu dengan joke tersebut jika nyambung!` 
                     },
                     { role: 'user', content: userMessage }
                 ],
-                temperature: 0.8 // Biar makin kreatif & ngaco jawabannya
+                temperature: 0.85
             }, {
                 headers: {
                     'Authorization': `Bearer ${process.env.BAI_API_KEY}`,
@@ -47,12 +56,16 @@ client.on('message', async (msg) => {
                 }
             });
 
-            const replyText = response.data.choices[0].message.content;
-            await msg.reply(replyText);
+            const aiReply = response.data.choices[0].message.content;
+            
+            // Gabungkan balasan AI dengan watermark pencipta
+            const finalReply = `${aiReply}\n\n---\n*Created by Muhammad Sulaiman*`;
+            
+            await msg.reply(finalReply);
 
         } catch (error) {
-            console.error('Error nembak API:', error.message);
-            await msg.reply('Aduh, otak gua lagi konslet (API Error). Coba lagi nanti deh!');
+            console.error('Error:', error.message);
+            await msg.reply('Aduh, sirkuit otak gua korslet! Coba lagi nanti.\n\n---\n*Created by Muhammad Sulaiman*');
         }
     }
 });
