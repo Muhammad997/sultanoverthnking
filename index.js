@@ -1,41 +1,46 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const qrcode = require('qrcode-terminal');
 const axios = require('axios');
 
-// Kumpulan jokes bapak-bapak / random buat tambahan renyah
+// =====================================================================
+// PENTING: Ganti dengan nomor HP yang akan dijadikan bot (pake kode negara tanpa '+')
+// Contoh: '628123456789'
+const NOMOR_HP_BOT = '628xxxxxxxxxx'; 
+// =====================================================================
+
 const randomJokes = [
     "Kenapa ayam kalau berkokok matanya merem? Soalnya udah hafal teksnya.",
     "Piring apa yang paling sensitif? Piring-piring cantik, digores dikit nangis.",
     "Kenapa gorengan kalau mateng warnanya cokelat? Kalau ijo mah lumut.",
     "Sepatu, sepatu apa yang bisa jalan sendiri? Sepatutnya kita bersyukur.",
-    "Bundaran HI kalau diputerin tiga kali jadinya apa? Jadinya pusing.",
-    "Kenapa donat tengahnya bolong? Kalau utuh namanya bakpao, dong.",
-    "Uang kalau dilempar jadi apa? Jadi rebutan, lah!"
+    "Bundaran HI kalau diputerin tiga kali jadinya apa? Jadinya pusing."
 ];
 
-// Inisialisasi Bot WA
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Wajib untuk Railway
+        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Wajib di Railway
     }
 });
 
-client.on('qr', (qr) => {
-    qrcode.generate(qr, { small: true });
-    console.log('--- SCAN QR CODE INI ---');
+// Logika untuk Pairing Code (Menggantikan QR Code)
+client.on('qr', async (qr) => {
+    try {
+        const pairingCode = await client.requestPairingCode(NOMOR_HP_BOT);
+        console.log('======================================');
+        console.log(`KODE PAIRING WHATSAPP KAMU: ${pairingCode}`);
+        console.log('======================================');
+    } catch (err) {
+        console.error('Gagal meminta pairing code:', err);
+    }
 });
 
 client.on('ready', () => {
-    console.log('🤖 Bot WA Kocak Muhammad Sulaiman udah aktif!');
+    console.log('🤖 Bot WA Kocak Muhammad Sulaiman sudah aktif lewat Pairing!');
 });
 
 client.on('message', async (msg) => {
-    // Merespon chat pribadi
     if (msg.from.endsWith('@c.us')) { 
         const userMessage = msg.body;
-        
-        // Ambil 1 joke random buat bumbu AI
         const jokeBumbu = randomJokes[Math.floor(Math.random() * randomJokes.length)];
 
         try {
@@ -44,28 +49,24 @@ client.on('message', async (msg) => {
                 messages: [
                     { 
                         role: 'system', 
-                        content: `Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp super lucu, kocak parah, dan suka ngasih jawaban di luar nalar. Jawablah dengan gaya bahasa gaul/slang. Sebagai inspirasi komedi, ini ada info tambahan joke hari ini: "${jokeBumbu}". Padukan kegilaanmu dengan joke tersebut jika nyambung!` 
+                        content: `Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp super kocak parah dan suka ngasih jawaban di luar nalar. Jawablah menggunakan bahasa gaul. Selipkan joke ini jika dirasa lucu: "${jokeBumbu}".` 
                     },
                     { role: 'user', content: userMessage }
                 ],
                 temperature: 0.85
             }, {
                 headers: {
-                    'Authorization': `Bearer ${process.env.BAI_API_KEY}`,
+                    'Authorization': `Bearer ${process.env.BAI_APIKEY}`, // Disesuaikan dengan nama secret di Railway kamu
                     'Content-Type': 'application/json'
                 }
             });
 
             const aiReply = response.data.choices[0].message.content;
-            
-            // Gabungkan balasan AI dengan watermark pencipta
-            const finalReply = `${aiReply}\n\n---\n*Created by Muhammad Sulaiman*`;
-            
-            await msg.reply(finalReply);
+            await msg.reply(`${aiReply}\n\n---\n*Created by Muhammad Sulaiman*`);
 
         } catch (error) {
-            console.error('Error:', error.message);
-            await msg.reply('Aduh, sirkuit otak gua korslet! Coba lagi nanti.\n\n---\n*Created by Muhammad Sulaiman*');
+            console.error('API Error:', error.message);
+            await msg.reply('Aduh, otak gua korslet! Coba lagi nanti.\n\n---\n*Created by Muhammad Sulaiman*');
         }
     }
 });
