@@ -1,2 +1,4 @@
-[providers.node]
+providers = ["node"]
+
+[node]
 pkgs = ["...", "google-chrome"]
