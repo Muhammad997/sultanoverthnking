@@ -14,7 +14,17 @@ const randomJokes = [
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox'] // Wajib di Railway
+        headless: 'new', // 1. WAJIB di server/Railway agar Chrome berjalan di background
+        args: [
+            '--no-sandbox', 
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage', // 2. Mencegah crash akibat batasan memori container
+            '--disable-gpu'
+        ]
+    },
+    webVersionCache: { // 3. PENTING! Mencegah error 't: t' dengan mengunci versi WA Web yang stabil
+        type: 'remote',
+        remotePath: 'https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.3000.1018591586-alpha.html'
     }
 });
 
@@ -51,7 +61,7 @@ client.on('message', async (msg) => {
                 temperature: 0.85
             }, {
                 headers: {
-                    'Authorization': `Bearer ${process.env.BAI_APIKEY}`, // Disesuaikan dengan nama secret di Railway kamu
+                    'Authorization': `Bearer ${process.env.BAI_APIKEY}`, 
                     'Content-Type': 'application/json'
                 }
             });
