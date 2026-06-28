@@ -1,5 +1,6 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-// 🛠️ PERBAIKAN 1: Cara import yang benar untuk CommonJS (require)
+
+// 🛠️ PERBAIKAN IMPORT UNTUK VERSI 0.2.0: Ambil sub-properti GoogleGenAI secara eksplisit
 const { GoogleGenAI } = require('@google/generative-ai'); 
 
 const NOMOR_HP_BOT = '6288211898831'; 
@@ -12,7 +13,7 @@ const randomJokes = [
     "Bundaran HI kalau diputerin tiga kali jadinya apa? Jadinya pusing."
 ];
 
-// 🛠️ PERBAIKAN 2: Inisialisasi langsung memasukkan API Key sebagai string
+// 🛠️ PERBAIKAN INISIALISASI UNTUK VERSI 0.2.0: Gunakan argumen string API Key langsung
 const ai = new GoogleGenAI(process.env.GEMINI_API_KEY);
 
 const client = new Client({
