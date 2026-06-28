@@ -1,5 +1,5 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const axios = require('axios');
+const { GoogleGenAI } = require('@google/generative-ai'); // Menggunakan SDK resmi Gemini
 const NOMOR_HP_BOT = '6288211898831'; 
 
 const randomJokes = [
@@ -10,15 +10,8 @@ const randomJokes = [
     "Bundaran HI kalau diputerin tiga kali jadinya apa? Jadinya pusing."
 ];
 
-// Membuat instance Axios kustom dengan Keep-Alive agar koneksi ke API b.ai tetap terbuka & cepat
-const aiApiClient = axios.create({
-    baseURL: 'https://api.b.ai/v1',
-    timeout: 8000, // Membatasi nunggu maksimal 8 detik biar bot gak hang
-    headers: {
-        'Authorization': `Bearer ${process.env.BAI_APIKEY}`, 
-        'Content-Type': 'application/json'
-    }
-});
+// Inisialisasi Gemini Client menggunakan API Key dari env
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const client = new Client({
     authStrategy: new LocalAuth(),
@@ -63,30 +56,28 @@ client.on('message', async (msg) => {
         const chat = await msg.getChat();
 
         try {
-            // [OPTIMALISASI 1] Langsung kirim efek mengetik ke user (Real-time feedback)
+            // Langsung kirim efek mengetik ke user
             await chat.sendStateTyping();
 
-            // [OPTIMALISASI 2] Memanggil API dengan client yang sudah terkonfigurasi Keep-Alive
-            const response = await aiApiClient.post('/chat/completions', {
-                model: 'glm-5.2',
-                messages: [
-                    { 
-                        role: 'system', 
-                        content: `Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp super kocak parah dan suka ngasih jawaban di luar nalar. Jawablah menggunakan bahasa gaul. Selipkan joke ini jika dirasa lucu: "${jokeBumbu}".` 
-                    },
-                    { role: 'user', content: userMessage }
-                ],
-                temperature: 0.85
+            // Memanggil model Gemini (disarankan menggunakan gemini-2.5-flash untuk respon cepat chat bot)
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash',
+                config: {
+                    // System instruction diletakkan di konfigurasi terpisah pada Gemini SDK
+                    systemInstruction: `Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp super kocak parah dan suka ngasih jawaban di luar nalar. Jawablah menggunakan bahasa gaul. Selipkan joke ini jika dirasa lucu: "${jokeBumbu}".`,
+                    temperature: 0.85,
+                },
+                contents: userMessage,
             });
 
-            const aiReply = response.data.choices[0].message.content;
+            const aiReply = response.text;
 
-            // [OPTIMALISASI 3] Matikan status mengetik sebelum mengirim pesan
+            // Matikan status mengetik sebelum mengirim pesan
             await chat.clearState();
             await msg.reply(`${aiReply}\n\n---\n*Created by Muhammad Sulaiman*`);
 
         } catch (error) {
-            console.error('API Error:', error.message);
+            console.error('Gemini API Error:', error.message);
             await chat.clearState();
             await msg.reply('Aduh, otak gua korslet! Coba lagi nanti.\n\n---\n*Created by Muhammad Sulaiman*');
         }
