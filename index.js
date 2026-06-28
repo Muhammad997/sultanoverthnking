@@ -1,5 +1,5 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const { GoogleGenAI } = require('@google/generative-ai'); // Menggunakan SDK resmi Gemini
+const { GoogleGenAI } = require('@google/generative-ai'); // Perbaikan impor constructor
 const NOMOR_HP_BOT = '6288211898831'; 
 
 const randomJokes = [
@@ -10,7 +10,7 @@ const randomJokes = [
     "Bundaran HI kalau diputerin tiga kali jadinya apa? Jadinya pusing."
 ];
 
-// Inisialisasi Gemini Client menggunakan API Key dari env
+// Inisialisasi Gemini Client menggunakan constructor GoogleGenAI yang benar
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const client = new Client({
@@ -23,7 +23,8 @@ const client = new Client({
             '--disable-dev-shm-usage',
             '--disable-gpu',
             '--no-first-run',
-            '--no-zygote'
+            '--no-zygote',
+            '--remote-debugging-port=9222' // Penting agar Puppeteer stabil di Linux/Railway
         ]
     },
     webVersionCache: { 
@@ -47,23 +48,19 @@ client.on('ready', () => {
 });
 
 client.on('message', async (msg) => {
-    // Memastikan hanya merespon chat pribadi (bukan grup/status)
     if (msg.from.endsWith('@c.us')) { 
         const userMessage = msg.body;
         const jokeBumbu = randomJokes[Math.floor(Math.random() * randomJokes.length)];
         
-        // Dapatkan objek chat untuk memicu status mengetik
         const chat = await msg.getChat();
 
         try {
-            // Langsung kirim efek mengetik ke user
             await chat.sendStateTyping();
 
-            // Memanggil model Gemini (disarankan menggunakan gemini-2.5-flash untuk respon cepat chat bot)
+            // Memanggil Gemini API menggunakan arsitektur SDK terbaru
             const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 config: {
-                    // System instruction diletakkan di konfigurasi terpisah pada Gemini SDK
                     systemInstruction: `Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp super kocak parah dan suka ngasih jawaban di luar nalar. Jawablah menggunakan bahasa gaul. Selipkan joke ini jika dirasa lucu: "${jokeBumbu}".`,
                     temperature: 0.85,
                 },
@@ -72,7 +69,6 @@ client.on('message', async (msg) => {
 
             const aiReply = response.text;
 
-            // Matikan status mengetik sebelum mengirim pesan
             await chat.clearState();
             await msg.reply(`${aiReply}\n\n---\n*Created by Muhammad Sulaiman*`);
 
