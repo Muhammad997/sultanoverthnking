@@ -1,6 +1,4 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-
-// 🛠️ PERBAIKAN IMPORT UNTUK VERSI 0.2.0: Ambil sub-properti GoogleGenAI secara eksplisit
 const { GoogleGenAI } = require('@google/generative-ai'); 
 
 const NOMOR_HP_BOT = '6288211898831'; 
@@ -13,8 +11,7 @@ const randomJokes = [
     "Bundaran HI kalau diputerin tiga kali jadinya apa? Jadinya pusing."
 ];
 
-// 🛠️ PERBAIKAN INISIALISASI UNTUK VERSI 0.2.0: Gunakan argumen string API Key langsung
-const ai = new GoogleGenAI(process.env.GEMINI_API_KEY);
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const client = new Client({
     authStrategy: new LocalAuth(),
@@ -60,16 +57,19 @@ client.on('message', async (msg) => {
         try {
             await chat.sendStateTyping();
 
-            // 🛠️ PERBAIKAN 3: Memanggil getGenerativeModel sesuai standar SDK terbaru
             const model = ai.getGenerativeModel({ 
                 model: 'gemini-1.5-flash', 
                 systemInstruction: `Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp super kocak parah dan suka ngasih jawaban di luar nalar. Jawablah menggunakan bahasa gaul. Selipkan joke ini jika dirasa lucu: "${jokeBumbu}".`
             });
 
-            // 🛠️ PERBAIKAN 4: Menyederhanakan pemanggilan generateContent
-            const result = await model.generateContent(userMessage);
-            const response = await result.response;
-            const aiReply = response.text();
+            const response = await model.generateContent({
+                contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+                generationConfig: {
+                    temperature: 0.85,
+                }
+            });
+
+            const aiReply = response.response.text();
 
             await chat.clearState();
             await msg.reply(`${aiReply}\n\n---\n*Created by Muhammad Sulaiman*`);
