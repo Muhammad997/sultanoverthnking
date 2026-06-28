@@ -1,14 +1,14 @@
 {
   "name": "wa-ai-lucu",
   "version": "1.0.0",
-  "description": "Bot WA Kocak GLM-5.2",
+  "description": "Bot WA Kocak Gemini AI",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "whatsapp-web.js": "github:pedroslopez/whatsapp-web.js#main",
-    "puppeteer": "^22.0.0",
-    "axios": "^1.7.2"
+    "@google/generative-ai": "^0.2.0",
+    "whatsapp-web.js": "^1.26.0",
+    "puppeteer": "^22.0.0"
   }
 }
