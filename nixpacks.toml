@@ -19,6 +19,7 @@ aptPkgs = [
     "libxfixes3", 
     "libxrandr2", 
     "libasound2t64", 
+    "libxcb1",           # Tambahan opsional tapi krusial untuk Chromium baru
     "libpango-1.0-0", 
     "libpangocairo-1.0-0", 
     "libgdk-pixbuf2.0-0", 
