@@ -1,5 +1,4 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-// PERBAIKAN: Import kelas GoogleGenAI dengan benar dari SDK terbaru
 const { GoogleGenAI } = require('@google/generative-ai'); 
 
 const NOMOR_HP_BOT = '6288211898831'; 
@@ -12,9 +11,8 @@ const randomJokes = [
     "Bundaran HI kalau diputerin tiga kali jadinya apa? Jadinya pusing."
 ];
 
-// PERBAIKAN: Inisialisasi menggunakan constructor GoogleGenAI yang benar
-const ai = new GoogleGenAI(process.env.GEMINI_API_KEY);
 
+const ai = new GoogleGenAI(process.env.GEMINI_API_KEY);
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
@@ -59,13 +57,11 @@ client.on('message', async (msg) => {
         try {
             await chat.sendStateTyping();
 
-            // PERBAIKAN: Cara memanggil model yang benar pada SDK terbaru
             const model = ai.getGenerativeModel({ 
                 model: 'gemini-1.5-flash',
                 systemInstruction: `Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp super kocak parah dan suka ngasih jawaban di luar nalar. Jawablah menggunakan bahasa gaul. Selipkan joke ini jika dirasa lucu: "${jokeBumbu}".`
             });
 
-            // PERBAIKAN: Menggunakan generateContent secara asinkron dengan benar
             const result = await model.generateContent(userMessage);
             const response = await result.response;
             const aiReply = response.text();
