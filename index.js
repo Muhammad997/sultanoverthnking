@@ -1,4 +1,5 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
+// 🛠️ PERBAIKAN 1: Cara import yang benar untuk CommonJS (require)
 const { GoogleGenAI } = require('@google/generative-ai'); 
 
 const NOMOR_HP_BOT = '6288211898831'; 
@@ -11,8 +12,9 @@ const randomJokes = [
     "Bundaran HI kalau diputerin tiga kali jadinya apa? Jadinya pusing."
 ];
 
-
+// 🛠️ PERBAIKAN 2: Inisialisasi langsung memasukkan API Key sebagai string
 const ai = new GoogleGenAI(process.env.GEMINI_API_KEY);
+
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
@@ -57,11 +59,13 @@ client.on('message', async (msg) => {
         try {
             await chat.sendStateTyping();
 
+            // 🛠️ PERBAIKAN 3: Memanggil getGenerativeModel sesuai standar SDK terbaru
             const model = ai.getGenerativeModel({ 
-                model: 'gemini-1.5-flash',
+                model: 'gemini-1.5-flash', 
                 systemInstruction: `Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp super kocak parah dan suka ngasih jawaban di luar nalar. Jawablah menggunakan bahasa gaul. Selipkan joke ini jika dirasa lucu: "${jokeBumbu}".`
             });
 
+            // 🛠️ PERBAIKAN 4: Menyederhanakan pemanggilan generateContent
             const result = await model.generateContent(userMessage);
             const response = await result.response;
             const aiReply = response.text();
