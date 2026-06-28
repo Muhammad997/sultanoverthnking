@@ -1,5 +1,5 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const { GoogleGenAI } = require('@google/generative-ai'); // Perbaikan impor constructor
+const { GoogleGenAI } = require('@google/generative-ai'); // Menggunakan class GoogleGenAI yang stabil untuk CommonJS
 const NOMOR_HP_BOT = '6288211898831'; 
 
 const randomJokes = [
@@ -10,7 +10,7 @@ const randomJokes = [
     "Bundaran HI kalau diputerin tiga kali jadinya apa? Jadinya pusing."
 ];
 
-// Inisialisasi Gemini Client menggunakan constructor GoogleGenAI yang benar
+// Inisialisasi menggunakan constructor GoogleGenAI yang benar
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const client = new Client({
@@ -24,7 +24,7 @@ const client = new Client({
             '--disable-gpu',
             '--no-first-run',
             '--no-zygote',
-            '--remote-debugging-port=9222' // Penting agar Puppeteer stabil di Linux/Railway
+            '--remote-debugging-port=9222'
         ]
     },
     webVersionCache: { 
@@ -57,17 +57,20 @@ client.on('message', async (msg) => {
         try {
             await chat.sendStateTyping();
 
-            // Memanggil Gemini API menggunakan arsitektur SDK terbaru
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
-                config: {
-                    systemInstruction: `Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp super kocak parah dan suka ngasih jawaban di luar nalar. Jawablah menggunakan bahasa gaul. Selipkan joke ini jika dirasa lucu: "${jokeBumbu}".`,
-                    temperature: 0.85,
-                },
-                contents: userMessage,
+            // Menggunakan pemanggilan model versi GoogleGenAI yang kompatibel
+            const model = ai.getGenerativeModel({ 
+                model: 'gemini-1.5-flash', // Menggunakan versi stabil v1.5 flash untuk performa chat optimal
+                systemInstruction: `Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp super kocak parah dan suka ngasih jawaban di luar nalar. Jawablah menggunakan bahasa gaul. Selipkan joke ini jika dirasa lucu: "${jokeBumbu}".`
             });
 
-            const aiReply = response.text;
+            const response = await model.generateContent({
+                contents: [{ role: 'user', parts: [{ text: userMessage }] }],
+                generationConfig: {
+                    temperature: 0.85,
+                }
+            });
+
+            const aiReply = response.response.text();
 
             await chat.clearState();
             await msg.reply(`${aiReply}\n\n---\n*Created by Muhammad Sulaiman*`);
