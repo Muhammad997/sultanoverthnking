@@ -1,5 +1,7 @@
 const { Client, LocalAuth } = require('whatsapp-web.js');
-const { GoogleGenAI } = require('@google/generative-ai'); // Menggunakan class GoogleGenAI yang stabil untuk CommonJS
+// PERBAIKAN: Import kelas GoogleGenAI dengan benar dari SDK terbaru
+const { GoogleGenAI } = require('@google/generative-ai'); 
+
 const NOMOR_HP_BOT = '6288211898831'; 
 
 const randomJokes = [
@@ -10,8 +12,8 @@ const randomJokes = [
     "Bundaran HI kalau diputerin tiga kali jadinya apa? Jadinya pusing."
 ];
 
-// Inisialisasi menggunakan constructor GoogleGenAI yang benar
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// PERBAIKAN: Inisialisasi menggunakan constructor GoogleGenAI yang benar
+const ai = new GoogleGenAI(process.env.GEMINI_API_KEY);
 
 const client = new Client({
     authStrategy: new LocalAuth(),
@@ -57,20 +59,16 @@ client.on('message', async (msg) => {
         try {
             await chat.sendStateTyping();
 
-            // Menggunakan pemanggilan model versi GoogleGenAI yang kompatibel
+            // PERBAIKAN: Cara memanggil model yang benar pada SDK terbaru
             const model = ai.getGenerativeModel({ 
-                model: 'gemini-1.5-flash', // Menggunakan versi stabil v1.5 flash untuk performa chat optimal
+                model: 'gemini-1.5-flash',
                 systemInstruction: `Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp super kocak parah dan suka ngasih jawaban di luar nalar. Jawablah menggunakan bahasa gaul. Selipkan joke ini jika dirasa lucu: "${jokeBumbu}".`
             });
 
-            const response = await model.generateContent({
-                contents: [{ role: 'user', parts: [{ text: userMessage }] }],
-                generationConfig: {
-                    temperature: 0.85,
-                }
-            });
-
-            const aiReply = response.response.text();
+            // PERBAIKAN: Menggunakan generateContent secara asinkron dengan benar
+            const result = await model.generateContent(userMessage);
+            const response = await result.response;
+            const aiReply = response.text();
 
             await chat.clearState();
             await msg.reply(`${aiReply}\n\n---\n*Created by Muhammad Sulaiman*`);
