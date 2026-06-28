@@ -11,6 +11,7 @@ const randomJokes = [
     "Bundaran HI kalau diputerin tiga kali jadinya apa? Jadinya pusing."
 ];
 
+// Di versi baru, API Key wajib dibungkus di dalam objek seperti ini
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 const client = new Client({
@@ -62,6 +63,7 @@ client.on('message', async (msg) => {
                 systemInstruction: `Nama kamu adalah "Sutan Overthinking". Kamu adalah bot WhatsApp super kocak parah dan suka ngasih jawaban di luar nalar. Jawablah menggunakan bahasa gaul. Selipkan joke ini jika dirasa lucu: "${jokeBumbu}".`
             });
 
+            // Struktur pemanggilan teks yang benar untuk versi modern
             const response = await model.generateContent({
                 contents: [{ role: 'user', parts: [{ text: userMessage }] }],
                 generationConfig: {
